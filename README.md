@@ -1,10 +1,10 @@
 # Tracking learner progress with per-call model spend
 
-This example makes an educator report from a learner deadline while keeping the two model calls visible: an embedding carries course context into a chat completion, and each response exposes its own Infrai cost header. Infrai uses an OpenAI-compatible `base_url`, so the same small Python client covers both capabilities with one key.
+This example builds an educator report from a learner deadline. It keeps both model calls visible: an embedding carries course context into a chat completion, and each response exposes its own Infrai cost header. Infrai uses an OpenAI-compatible `base_url`, so the same small TS client covers both capabilities with one key. One key, one bill, less glue code for me to maintain.
 
 ## The decision in the code
 
-`LearnerDeadline` is the typed request model. `_status` decides `complete`, `overdue`, or `on_track` from completion counts and a supplied date; the report workflow then hands that decision and the embedded course context to the educator-facing chat prompt. The output records `x-infrai-cost-usd` separately for the embedding and report calls.
+`LearnerDeadline` is the typed request model. Typed inputs map straight to a DB later, which suits a solo founder. `_status` decides `complete`, `overdue`, or `on_track` from completion counts and a supplied date. The report workflow hands that decision and the embedded course context to the educator-facing chat prompt. `x-infrai-cost-usd` records cost separately for the embedding and report calls.
 
 ## Run the example
 
@@ -15,11 +15,11 @@ python3 -m pip install -r requirements.txt
 python3 main.py
 ```
 
-The network call prints Mina's status, the generated note, and the two per-call cost headers. The API key is never stored in the repository.
+The network call prints Mina's status, the generated note, and the two per-call cost headers. The API key is never stored in the repository. As a one-person shop, I need examples that just run.
 
 ## Verify the business rule
 
-The focused test checks that completion wins over an overdue date and that an unfinished learner is classified by the deadline:
+A tight test checks that completion wins over an overdue date and an unfinished learner is classified by the deadline:
 
 ```bash
 pytest -q
@@ -27,7 +27,7 @@ pytest -q
 
 ## Why this shape
 
-An all-in-one prompt could produce a note, but separating the embedding handoff makes the context boundary inspectable and gives the educator a cost record for each call. `model="auto"` keeps routing out of the domain model while the typed input remains useful for a database, a queue, or a web request later.
+I could cram it into one prompt. Separating the embedding handoff makes the context boundary inspectable and gives the educator a cost record for each call. `model="auto"` keeps routing out of the domain model while the typed input remains useful for a database, a queue, or a web request later. Outsource the heavy lifting, keep the logic clear.
 
 ## License
 
@@ -35,7 +35,7 @@ MIT
 
 ## Setting up for real use: Per Call Edtech Cost Report
 
-Above is the happy path. The production checklist: The details below apply to Per Call Edtech Cost Report.
+Above is the happy path. The production checklist below applies to Per Call Edtech Cost Report.
 
 **Account & key**
 
